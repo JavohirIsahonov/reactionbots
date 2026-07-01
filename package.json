@@ -1,0 +1,21 @@
+{
+  "name": "reaksiya-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon src/main.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "input": "^1.0.1",
+    "node-telegram-bot-api": "^1.1.2",
+    "nodemon": "^3.1.14",
+    "telegram": "^2.26.22"
+  }
+}
