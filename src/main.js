@@ -32,7 +32,7 @@ async function main() {
         for (const chatId of trackedChannels) {
             try {
                 console.log(`[Startup] Fetching history for channel ${chatId}...`);
-                const messageIds = await gramJsClient.getChannelMessages(chatId, 100);
+                const messageIds = await gramJsClient.getChannelMessages(chatId);
                 
                 if (messageIds.length > 0) {
                     console.log(`[Startup] Syncing ${messageIds.length} posts in channel ${chatId}...`);
@@ -52,34 +52,7 @@ async function main() {
     // 4. Start polling for new/real-time posts
     await botManager.startPolling();
 
-    // 5. Setup dynamic scheduled regular sync scans (every 24 hours) - uses immediate reactions
-    const runScanner = async () => {
-        if (trackedChannels.size === 0) {
-            console.log('[Scanner] No channels detected yet. Retrying scan in 30s...');
-            setTimeout(runScanner, 30000);
-            return;
-        }
 
-        console.log(`[Scanner] Starting scheduled sync of ${trackedChannels.size} channel(s)...`);
-        for (const chatId of trackedChannels) {
-            try {
-                const messageIds = await gramJsClient.getChannelMessages(chatId, 100);
-                if (messageIds.length > 0) {
-                    console.log(`[Scanner] Syncing ${messageIds.length} posts in channel ${chatId}...`);
-                    for (const messageId of messageIds.reverse()) {
-                        await botManager.reactToMessage(chatId, messageId, 'Scheduled Sync', true);
-                    }
-                }
-            } catch (error) {
-                console.error(`[Scanner] Error during scheduled sync:`, error.message);
-            }
-        }
-        console.log('[Scanner] Scheduled sync complete. Next full scan in 24 hours.');
-        setTimeout(runScanner, 24 * 60 * 60 * 1000);
-    };
-
-    // Schedule next sync in 24 hours
-    setTimeout(runScanner, 24 * 60 * 60 * 1000);
 
     console.log('--- System is Ready: Historical posts processed, Real-time active ---');
 }

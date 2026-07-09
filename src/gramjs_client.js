@@ -55,20 +55,40 @@ class GramJsClient {
     /**
      * Retrieve existing posts from a channel
      */
-    async getChannelMessages(chatId, limit = 100) {
+    async getChannelMessages(chatId) {
         if (!this.client) {
             console.error('GramJS: Client not initialized');
             return [];
         }
 
         try {
-            console.log(`GramJS: Fetching last ${limit} messages from ${chatId}...`);
-            const messages = await this.client.getMessages(chatId, {
-                limit: limit,
-            });
-            
-            // Filter to only include actual messages (not service messages)
-            return messages.filter(m => m.id && m.message).map(m => m.id);
+            console.log(`GramJS: Fetching all messages from channel ${chatId}...`);
+            let allMessageIds = [];
+            let offsetId = 0;
+            const limit = 100;
+
+            while (true) {
+                const messages = await this.client.getMessages(chatId, {
+                    limit: limit,
+                    offsetId: offsetId,
+                });
+
+                if (!messages || messages.length === 0) {
+                    break;
+                }
+
+                const validMessageIds = messages.filter(m => m.id && m.className === 'Message').map(m => m.id);
+                allMessageIds.push(...validMessageIds);
+
+                const minId = Math.min(...messages.map(m => m.id));
+                if (minId <= 1 || (offsetId !== 0 && minId >= offsetId)) {
+                    break;
+                }
+                offsetId = minId;
+            }
+
+            console.log(`GramJS: Found ${allMessageIds.length} messages in total for ${chatId}.`);
+            return allMessageIds;
         } catch (error) {
             console.error('GramJS: Error fetching history:', error.message);
             return [];
